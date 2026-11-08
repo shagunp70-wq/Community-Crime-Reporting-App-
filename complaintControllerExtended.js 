@@ -1,0 +1,66 @@
+const Complaint = require('../models/Complaint'); 
+
+exports.createComplaint = async (req, res) => { 
+try { 
+const { title, description, status, priority } = req.body; 
+if (!title || !description || !status) { 
+return res.status(400).json({ message: 'Missing required fields' }); 
+} 
+const complaint = await Complaint.create({ 
+...req.body, 
+userId: req.user.id 
+}); 
+res.status(201).json({ 
+message: 'Complaint created', 
+data: complaint 
+}); 
+} catch (error) { 
+res.status(500).json({ message: 'Create complaint failed' }); 
+} 
+}; 
+
+exports.getAllComplaints = async (req, res) => { 
+try { 
+const complaints = await Complaint.find({ userId: req.user.id }); 
+res.status(200).json({ 
+data: complaints, 
+total: complaints.length 
+}); 
+} catch (error) { 
+res.status(500).json({ message: 'Fetch complaints failed' }); 
+} 
+}; 
+
+exports.getComplaintById = async (req, res) => { 
+try { 
+const complaint = await Complaint.findById(req.params.id); 
+if (!complaint) return res.status(404).json({ message: 'Not found' }); 
+res.status(200).json({ data: complaint }); 
+} catch (error) { 
+res.status(500).json({ message: 'Fetch complaint failed' }); 
+} 
+}; 
+
+exports.updateComplaint = async (req, res) => { 
+try { 
+const complaint = await Complaint.findByIdAndUpdate( 
+req.params.id, 
+req.body, 
+{ new: true } 
+); 
+if (!complaint) return res.status(404).json({ message: 'Not found' }); 
+res.status(200).json({ data: complaint }); 
+} catch (error) { 
+res.status(500).json({ message: 'Update failed' }); 
+} 
+}; 
+
+exports.deleteComplaint = async (req, res) => { 
+try { 
+const complaint = await Complaint.findByIdAndDelete(req.params.id); 
+if (!complaint) return res.status(404).json({ message: 'Not found' }); 
+res.status(200).json({ message: 'Complaint deleted' }); 
+} catch (error) { 
+res.status(500).json({ message: 'Delete failed' }); 
+} 
+};
